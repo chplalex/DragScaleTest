@@ -31,9 +31,8 @@
         tools:text="x = 100 y = 200 h = 300 w = 700" />
 
     <com.chplalex.dragscaletest.PointView
-        android:id="@+id/point_view"
-        android:layout_width="3dp"
-        android:layout_height="3dp"
+        android:layout_width="5dp"
+        android:layout_height="5dp"
         android:layout_gravity="center" />
 
 </FrameLayout>

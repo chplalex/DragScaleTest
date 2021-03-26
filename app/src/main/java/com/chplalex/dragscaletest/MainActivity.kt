@@ -38,9 +38,13 @@ class MainActivity : AppCompatActivity() {
         }
 
         override fun onScroll(e1: MotionEvent?, e2: MotionEvent?, distanceX: Float, distanceY: Float): Boolean {
-            contentContainer.translationX -= distanceX
-            contentContainer.translationY -= distanceY
-            return true
+            return if (scaleGestureDetector.isInProgress) {
+                false
+            } else {
+                contentContainer.translationX -= distanceX
+                contentContainer.translationY -= distanceY
+                true
+            }
         }
     }
 
@@ -48,6 +52,7 @@ class MainActivity : AppCompatActivity() {
 
         override fun onScale(detector: ScaleGestureDetector): Boolean {
                 return if (detector.isInProgress) {
+                    with(detector) { pointView.showAt(focusX, focusY) }
                     scaleFactor *= detector.scaleFactor
                     scaleFactor = max(MIN_SCALE, min(scaleFactor, MAX_SCALE))
                     contentContainer.scaleX = scaleFactor
@@ -56,6 +61,11 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     false
                 }
+        }
+
+        override fun onScaleEnd(detector: ScaleGestureDetector?) {
+            super.onScaleEnd(detector)
+            pointView.makeGone()
         }
     }
 
@@ -95,5 +105,21 @@ class MainActivity : AppCompatActivity() {
     private fun initGestureDetectors() {
         commonGestureDetector = GestureDetector(this, commonGestureListener)
         scaleGestureDetector = ScaleGestureDetector(this, scaleGestureListener)
+    }
+
+    private fun View.showAt(atX: Float, atY: Float) {
+        this.translationX = 0f
+        this.translationY = 0f
+//        this.scaleX = 0f
+//        this.scaleY = 0f
+        this.pivotX = 0f
+        this.pivotY = 0f
+        this.x = atX
+        this.y = atY
+        this.visibility = View.VISIBLE
+    }
+
+    private fun View.makeGone() {
+        this.visibility = View.GONE
     }
 }
