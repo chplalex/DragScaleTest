@@ -9,29 +9,31 @@
     <com.chplalex.dragscaletest.MainTextView
         android:id="@+id/view01"
         style="@style/view_element"
-        android:translationX="0dp"
-        android:translationY="0dp"
+        android:layout_gravity="start|top"
         tools:text="x = 100 y = 200 h = 300 w = 700" />
 
     <com.chplalex.dragscaletest.MainTextView
         android:id="@+id/view02"
         style="@style/view_element"
-        android:translationX="200dp"
-        android:translationY="0dp"
+        android:layout_gravity="top|end"
         tools:text="x = 100 y = 200 h = 300 w = 700" />
 
     <com.chplalex.dragscaletest.MainTextView
         android:id="@+id/view03"
         style="@style/view_element"
-        android:translationX="0dp"
-        android:translationY="200dp"
+        android:layout_gravity="end|bottom"
         tools:text="x = 100 y = 200 h = 300 w = 700" />
 
     <com.chplalex.dragscaletest.MainTextView
         android:id="@+id/view04"
         style="@style/view_element"
-        android:translationX="200dp"
-        android:translationY="200dp"
+        android:layout_gravity="start|bottom"
         tools:text="x = 100 y = 200 h = 300 w = 700" />
+
+    <com.chplalex.dragscaletest.PointView
+        android:id="@+id/point_view"
+        android:layout_width="3dp"
+        android:layout_height="3dp"
+        android:layout_gravity="center" />
 
 </FrameLayout>
