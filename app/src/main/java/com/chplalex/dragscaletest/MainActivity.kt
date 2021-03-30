@@ -1,5 +1,6 @@
 package com.chplalex.dragscaletest
 
+import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.*
@@ -22,12 +23,33 @@ class MainActivity : AppCompatActivity() {
     private lateinit var view03: TextView
     private lateinit var view04: TextView
     private lateinit var pointView: PointView
+    private lateinit var bezierView: BezierView
 
     private val commonGestureListener = CommonGestureListener()
     private val scaleGestureListener = ScaleGestureListener()
 
     private lateinit var commonGestureDetector : GestureDetector
     private lateinit var scaleGestureDetector : ScaleGestureDetector
+
+    private val segment = MetroLineSegmentUiModel(
+        startCoordinates = MetroPointUiModel(
+            x = 150,
+            y = 200
+        ),
+        endCoordinates = MetroPointUiModel(
+            x = 150,
+            y = 500
+        ),
+        bezieFirstPoint = MetroPointUiModel(
+            x = 150,
+            y = 200
+        ),
+        bezieSecondPoint = MetroPointUiModel(
+            x = 150,
+            y = 500
+        ),
+        isFinished = true
+    )
 
     private var scaleFactor = 1f
 
@@ -96,9 +118,15 @@ class MainActivity : AppCompatActivity() {
         view03 = createView(R.id.view03)
         view04 = createView(R.id.view04)
         pointView = createPointView()
+        bezierView = createSegmentView(segment, Color.RED)
+        contentContainer.addView(bezierView)
     }
 
     private fun createPointView() = findViewById<PointView>(R.id.point_view)
+
+    private fun createSegmentView(segment: MetroLineSegmentUiModel, lineColor: Int): BezierView {
+        return BezierView(context = this, lineColor = lineColor, segment = segment)
+    }
 
     private fun createView(id: Int) = findViewById<MainTextView>(id)
 
