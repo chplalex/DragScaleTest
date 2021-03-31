@@ -1,17 +1,14 @@
 package com.chplalex.dragscaletest
 
 import android.content.Context
-import android.graphics.Canvas
-import android.graphics.Paint
-import android.graphics.Path
-import android.graphics.RectF
+import android.graphics.*
 import android.util.AttributeSet
 import android.util.TypedValue
+import android.view.MotionEvent
 import android.view.View
-import android.view.ViewGroup
+import android.widget.Toast
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.random.Random
 
 private const val LINE_HEIGHT = 48F
 
@@ -25,67 +22,65 @@ class BezierView
 ) : View(context, attrs, defStyleAttr) {
 
     private val path = Path()
-    private val paint = Paint()
+
+    private val pathPaint = Paint().apply {
+        style = Paint.Style.STROKE
+        isAntiAlias = true
+        strokeWidth = LINE_HEIGHT
+        color = lineColor
+    }
+
+    private val touchableRectPaint = Paint().apply {
+        alpha = 0
+    }
+
+    private val touchableRect = Rect()
+
+    private val startX = segment.startCoordinates.x
+    private val startY = segment.startCoordinates.y
+    private val endX = segment.endCoordinates.x
+    private val endY = segment.endCoordinates.y
 
     init {
-        paint.apply {
-            style = Paint.Style.STROKE
-            isAntiAlias = true
-            strokeWidth = LINE_HEIGHT
-            color = lineColor
-        }
-
-        val dX = with(segment) {
-            min(
-                min(startCoordinates.x, endCoordinates.x),
-                min(bezieFirstPoint.x, bezieSecondPoint.x)
-            )
-        }
-
-        val dY = with(segment) {
-            min(
-                min(startCoordinates.y, endCoordinates.y),
-                min(bezieFirstPoint.y, bezieSecondPoint.y)
-            )
-        }
-
         path.moveTo(
-            dpToPx(context, segment.startCoordinates.x.toFloat()),
-            dpToPx(context, segment.startCoordinates.y.toFloat())
+            segment.startCoordinates.x.toPx(),
+            segment.startCoordinates.y.toPx()
         )
         path.cubicTo(
-            dpToPx(context, segment.bezieFirstPoint.x.toFloat()),
-            dpToPx(context, segment.bezieFirstPoint.y.toFloat()),
-            dpToPx(context, segment.bezieSecondPoint.x.toFloat()),
-            dpToPx(context, segment.bezieSecondPoint.y.toFloat()),
-            dpToPx(context, segment.endCoordinates.x.toFloat()),
-            dpToPx(context, segment.endCoordinates.y.toFloat())
-        )
-        path.offset(
-            dpToPx(context, LINE_HEIGHT / 2 - dX.toFloat()),
-            dpToPx(context, LINE_HEIGHT / 2 - dY.toFloat())
+            segment.bezieFirstPoint.x.toPx(),
+            segment.bezieFirstPoint.y.toPx(),
+            segment.bezieSecondPoint.x.toPx(),
+            segment.bezieSecondPoint.y.toPx(),
+            segment.endCoordinates.x.toPx(),
+            segment.endCoordinates.y.toPx()
         )
 
-        translationX = dpToPx(context, dX.toFloat() - LINE_HEIGHT / 2)
-        translationY = dpToPx(context, dY.toFloat() - LINE_HEIGHT / 2)
+        val minX = with(segment) { min(startCoordinates.x, endCoordinates.x) }
+        val minY = with(segment) { min(startCoordinates.y, endCoordinates.y) }
 
-        val rect = RectF()
-        path.computeBounds(rect, true)
-        layoutParams = ViewGroup.LayoutParams(
-            max(LINE_HEIGHT, rect.width()).toInt(),
-            max(LINE_HEIGHT, rect.height()).toInt()
+        val maxX = with(segment) { max(startCoordinates.x, endCoordinates.x) }
+        val maxY = with(segment) { max(startCoordinates.y, endCoordinates.y) }
+
+        val dX = maxX - minX
+        val dY = maxY - minY
+
+        val centerX = minX + dX / 2
+        val centerY = minY + dY / 2
+
+        val dd = max(dX, dY) / 6
+
+        touchableRect.set(
+            (centerX - dd).toPx().toInt(),
+            (centerY - dd).toPx().toInt(),
+            (centerX + dd).toPx().toInt(),
+            (centerY + dd).toPx().toInt()
         )
-
-        var backgroundColor = Random.nextInt()
-        if (backgroundColor == lineColor) {
-            backgroundColor = Random.nextInt()
-        }
-        setBackgroundColor(backgroundColor)
     }
 
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
-        canvas?.drawPath(path, paint)
+        canvas?.drawPath(path, pathPaint)
+        canvas?.drawRect(touchableRect, touchableRectPaint)
     }
 
     fun dpToPx(context: Context, dp: Float) = TypedValue.applyDimension(
@@ -93,5 +88,18 @@ class BezierView
         dp,
         context.resources.displayMetrics
     )
+
+    override fun onTouchEvent(event: MotionEvent) =
+        if (touchableRect.contains(event.x.toInt(), event.y.toInt())) {
+            super.onTouchEvent(event)
+        } else {
+            false
+        }
+
+    private fun min4(i1: Int, i2: Int, i3: Int, i4: Int) = min(min(i1, i2), min(i3, i4))
+
+    private fun max4(i1: Int, i2: Int, i3: Int, i4: Int) = max(max(i1, i2), max(i3, i4))
+
+    private fun Int.toPx() = dpToPx(context, this.toFloat())
 
 }

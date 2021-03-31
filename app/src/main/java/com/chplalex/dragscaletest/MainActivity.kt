@@ -1,8 +1,10 @@
 package com.chplalex.dragscaletest
 
+import android.content.Context
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.TypedValue
 import android.view.*
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
@@ -22,8 +24,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var view02: TextView
     private lateinit var view03: TextView
     private lateinit var view04: TextView
-    private lateinit var pointView: PointView
-    private lateinit var bezierView: BezierView
+    private lateinit var pointPivot: PointView
+    private lateinit var pointStart: PointView
+    private lateinit var pointEnd: PointView
+    private lateinit var segmentView: View
 
     private val commonGestureListener = CommonGestureListener()
     private val scaleGestureListener = ScaleGestureListener()
@@ -31,22 +35,27 @@ class MainActivity : AppCompatActivity() {
     private lateinit var commonGestureDetector : GestureDetector
     private lateinit var scaleGestureDetector : ScaleGestureDetector
 
+    private val startX = 100
+    private val startY = 150
+    private val endX = 300
+    private val endY = 450
+
     private val segment = MetroLineSegmentUiModel(
         startCoordinates = MetroPointUiModel(
-            x = 150,
-            y = 200
+            x = startX,
+            y = startY
         ),
         endCoordinates = MetroPointUiModel(
-            x = 150,
-            y = 500
+            x = endX,
+            y = endY
         ),
         bezieFirstPoint = MetroPointUiModel(
-            x = 150,
-            y = 200
+            x = startX,
+            y = startY
         ),
         bezieSecondPoint = MetroPointUiModel(
-            x = 150,
-            y = 500
+            x = endX,
+            y = endY
         ),
         isFinished = true
     )
@@ -74,7 +83,7 @@ class MainActivity : AppCompatActivity() {
 
         override fun onScale(detector: ScaleGestureDetector): Boolean {
                 return if (detector.isInProgress) {
-                    with(detector) { pointView.showAt(focusX, focusY) }
+                    with(detector) { pointPivot.showAt(focusX, focusY) }
                     scaleFactor *= detector.scaleFactor
                     scaleFactor = max(MIN_SCALE, min(scaleFactor, MAX_SCALE))
                     contentContainer.scaleX = scaleFactor
@@ -87,7 +96,7 @@ class MainActivity : AppCompatActivity() {
 
         override fun onScaleEnd(detector: ScaleGestureDetector?) {
             super.onScaleEnd(detector)
-            pointView.makeGone()
+            pointPivot.makeGone()
         }
     }
 
@@ -117,14 +126,25 @@ class MainActivity : AppCompatActivity() {
         view02 = createView(R.id.view02)
         view03 = createView(R.id.view03)
         view04 = createView(R.id.view04)
-        pointView = createPointView()
-        bezierView = createSegmentView(segment, Color.RED)
-        contentContainer.addView(bezierView)
+        pointPivot = createPointPivot()
+//        pointStart = createPointStart()
+//        pointEnd = createPointEnd()
+        segmentView = createSegmentView(segment, Color.RED)
+        contentContainer.addView(segmentView)
     }
 
-    private fun createPointView() = findViewById<PointView>(R.id.point_view)
+//    private fun createPointStart() = findViewById<PointView>(R.id.point_start).also {
+//        it.showAt(startX.toPx(), startY.toPx())
+//    }
+//
+//    private fun createPointEnd() = findViewById<PointView>(R.id.point_end).also {
+//        it.showAt(endX.toPx(), endY.toPx())
+//    }
 
-    private fun createSegmentView(segment: MetroLineSegmentUiModel, lineColor: Int): BezierView {
+    private fun createPointPivot() = findViewById<PointView>(R.id.point_pivot)
+
+    private fun createSegmentView(segment: MetroLineSegmentUiModel, lineColor: Int): View {
+//        return RectView(context = this, lineColor = lineColor, segment = segment)
         return BezierView(context = this, lineColor = lineColor, segment = segment)
     }
 
@@ -150,4 +170,12 @@ class MainActivity : AppCompatActivity() {
     private fun View.makeGone() {
         this.visibility = View.GONE
     }
+
+    fun dpToPx(context: Context, dp: Float) = TypedValue.applyDimension(
+        TypedValue.COMPLEX_UNIT_DIP,
+        dp,
+        context.resources.displayMetrics
+    )
+
+    private fun Int.toPx() = dpToPx(this@MainActivity, this.toFloat())
 }
