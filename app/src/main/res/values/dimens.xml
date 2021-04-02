@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="metro_map_center_focus_icon_size">50dp</dimen>
+    <dimen name="metro_map_center_focus_icon_margin">25dp</dimen>
+    <dimen name="elevation">4dp</dimen>
+</resources>

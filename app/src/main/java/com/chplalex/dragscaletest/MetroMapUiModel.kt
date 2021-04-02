@@ -46,8 +46,8 @@ data class MetroLineUiModel(
 data class MetroLineSegmentUiModel(
     val startCoordinates: MetroPointUiModel,
     val endCoordinates: MetroPointUiModel,
-    val bezieFirstPoint: MetroPointUiModel,
-    val bezieSecondPoint: MetroPointUiModel,
+    val bezierFirstPoint: MetroPointUiModel,
+    val bezierSecondPoint: MetroPointUiModel,
     val isFinished: Boolean
 )
 

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/content_container"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent" >
 
     <com.chplalex.dragscaletest.MainTextView
         android:id="@+id/view01"
@@ -16,6 +16,7 @@
         android:id="@+id/view02"
         style="@style/view_element"
         android:layout_gravity="top|end"
+        android:visibility="invisible"
         tools:text="x = 100 y = 200 h = 300 w = 700" />
 
     <com.chplalex.dragscaletest.MainTextView
@@ -28,6 +29,7 @@
         android:id="@+id/view04"
         style="@style/view_element"
         android:layout_gravity="start|bottom"
+        android:visibility="invisible"
         tools:text="x = 100 y = 200 h = 300 w = 700" />
 
     <com.chplalex.dragscaletest.PointView
@@ -35,14 +37,11 @@
         android:layout_height="3dp"
         android:layout_gravity="center"/>
 
-<!--    <com.chplalex.dragscaletest.PointView-->
-<!--        android:id="@+id/point_start"-->
-<!--        android:layout_width="3dp"-->
-<!--        android:layout_height="3dp" />-->
-
-<!--    <com.chplalex.dragscaletest.PointView-->
-<!--        android:id="@+id/point_end"-->
-<!--        android:layout_width="3dp"-->
-<!--        android:layout_height="3dp" />-->
+    <com.chplalex.dragscaletest.PointView
+        android:id="@+id/point_pivot"
+        android:layout_width="3dp"
+        android:layout_height="3dp"
+        android:elevation="5dp"
+        android:visibility="gone"/>
 
 </FrameLayout>

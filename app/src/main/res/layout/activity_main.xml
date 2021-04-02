@@ -7,11 +7,16 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <com.chplalex.dragscaletest.PointView
-        android:id="@+id/point_pivot"
-        android:layout_width="3dp"
-        android:layout_height="3dp"
-        android:elevation="5dp"
-        android:visibility="gone"/>
+    <include layout="@layout/content_container"/>
+
+    <ImageView
+        android:id="@+id/metro_map_center_focus_icon"
+        android:layout_width="@dimen/metro_map_center_focus_icon_size"
+        android:layout_height="@dimen/metro_map_center_focus_icon_size"
+        android:src="@drawable/ic_center_focus"
+        android:elevation="@dimen/elevation"
+        android:layout_margin="@dimen/metro_map_center_focus_icon_margin"
+        android:layout_gravity="bottom|end"
+        tools:src="@tools:sample/backgrounds/scenic" />
 
 </FrameLayout>
