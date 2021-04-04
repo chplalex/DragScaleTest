@@ -20,7 +20,7 @@ import kotlin.math.min
 private const val MIN_SCALE = 1f
 private const val MAX_SCALE = 2f
 private const val NORM_SCALE = 1f
-private const val SCALE_DURATION = 500L
+private const val ANIMATION_DURATION = 500L
 
 class MainActivity : AppCompatActivity() {
 
@@ -45,6 +45,10 @@ class MainActivity : AppCompatActivity() {
     private val startY = 150
     private val endX = 300
     private val endY = 450
+
+    private val point = Point(100, 10)
+
+    private var isScaleOn = false
 
     private val segment = MetroLineSegmentUiModel(
         startCoordinates = MetroPointUiModel(
@@ -101,13 +105,10 @@ class MainActivity : AppCompatActivity() {
 
                 pointPivot.showAt(pX, pY)
 
-                showBefore()
+                val newScale = if (contentContainer.hasScaleNearToMin()) { MAX_SCALE } else { MIN_SCALE }
 
-                if (contentContainer.hasScaleNearToMin()) {
-                    doAnimation(MAX_SCALE, pX, pY)
-                } else {
-                    doAnimation(MIN_SCALE, pX, pY)
-                }
+                doAnimation(newScale, pX, pY)
+
                 true
             } else {
                 false
@@ -119,7 +120,7 @@ class MainActivity : AppCompatActivity() {
 
         override fun onScale(detector: ScaleGestureDetector): Boolean {
             return if (detector.isInProgress) {
-                // with(detector) { pointPivot.showAt(focusX, focusY) }
+                with(detector) { pointPivot.showAt(focusX, focusY) }
                 scaleFactor *= detector.scaleFactor
                 scaleFactor = max(MIN_SCALE, min(scaleFactor, MAX_SCALE))
                 contentContainer.scaleX = scaleFactor
@@ -132,7 +133,7 @@ class MainActivity : AppCompatActivity() {
 
         override fun onScaleEnd(detector: ScaleGestureDetector?) {
             super.onScaleEnd(detector)
-//            pointPivot.makeGone()
+            pointPivot.makeGone()
         }
     }
 
@@ -178,21 +179,17 @@ class MainActivity : AppCompatActivity() {
         Log.d("CHPL", msg)
     }
 
-    private val animatorListener = object : Animator.AnimatorListener {
+    inner class AnimatorListener(private val scaleTarget: Float) : Animator.AnimatorListener {
         override fun onAnimationStart(animation: Animator?) {
-            showMsg("animation start")
-            showStatus()
             // nothing
         }
 
         override fun onAnimationEnd(animation: Animator?) {
-            showMsg("animation end")
-            showStatus()
-            scaleFactor = contentContainer.scaleX
+            scaleFactor = scaleTarget
         }
 
         override fun onAnimationCancel(animation: Animator?) {
-            scaleFactor = contentContainer.scaleX
+            // nothing
         }
 
         override fun onAnimationRepeat(animation: Animator?) {
@@ -200,47 +197,38 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showStatus() {
-        with (contentContainer) {
-            showMsg("x = $x y = $y w = $width h = $height")
-            showMsg("pivotX = $pivotX pivotY = $pivotY")
-            showMsg("scaleX = $scaleX scaleY = $scaleY")
-            showMsg("translationX = $translationX translationY = $translationY")
-        }
-    }
-
     private fun doAnimation(scaleTarget: Float, pX: Float, pY: Float) {
-        val dX = with (contentContainer) { pX * (scaleTarget - 1) }
-        val dY = with (contentContainer) { pY * (scaleTarget - 1) }
 
-        val animatorTranslationX = createPropertyAnimator("translationX", -dX)
-        val animatorTranslationY = createPropertyAnimator("translationY", -dY)
+        val animatorListener = AnimatorListener(scaleTarget)
+
+        val dX = with (contentContainer) { pX * (1 - scaleTarget) }
+        val dY = with (contentContainer) { pY * (1 - scaleTarget) }
+
+        val animatorTranslationX = createPropertyAnimator("translationX", dX)
+        val animatorTranslationY = createPropertyAnimator("translationY", dY)
 
         val animatorScaleX = createPropertyAnimator("scaleX", scaleTarget)
         val animatorScaleY = createPropertyAnimator("scaleY", scaleTarget)
 
-//        val animatorPivotX = createPropertyAnimator("pivotX", pX)
-//        val animatorPivotY = createPropertyAnimator("pivotY", pY)
-
         AnimatorSet().apply {
-//            play(animatorTranslationX).with(animatorTranslationY)
+            play(animatorTranslationX).with(animatorTranslationY)
             play(animatorScaleX).with(animatorScaleY)
-//            play(animatorPivotX).with(animatorPivotY)
             addListener(animatorListener)
             start()
         }
     }
 
     private fun resetAnimation() {
+        val animatorListener = AnimatorListener(NORM_SCALE)
+
         val animatorScaleX = createPropertyAnimator("scaleX", NORM_SCALE)
         val animatorScaleY = createPropertyAnimator("scaleY", NORM_SCALE)
-//        val animatorPivotX = createPropertyAnimator("pivotX", (contentContainer.width / 2).toFloat())
-//        val animatorPivotY = createPropertyAnimator("pivotY", (contentContainer.height / 2).toFloat())
+
         val animatorX = createPropertyAnimator("x", 0f)
         val animatorY = createPropertyAnimator("y", 0f)
+
         AnimatorSet().apply {
             play(animatorScaleX).with(animatorScaleY)
-//            play(animatorPivotX).with(animatorPivotY)
             play(animatorX).with(animatorY)
             addListener(animatorListener)
             start()
@@ -249,7 +237,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun createPropertyAnimator(propertyName: String, propertyTarget: Float) =
         ObjectAnimator.ofFloat(contentContainer, propertyName, propertyTarget).apply {
-            duration = SCALE_DURATION
+            duration = ANIMATION_DURATION
         }
 
     private fun createPointPivot() = findViewById<PointView>(R.id.point_pivot)
@@ -266,12 +254,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun View.showAt(atX: Float, atY: Float) {
-        this.translationX = 0f
-        this.translationY = 0f
-//        this.scaleX = 0f
-//        this.scaleY = 0f
-        this.pivotX = 0f
-        this.pivotY = 0f
         this.x = atX
         this.y = atY
         this.visibility = View.VISIBLE
@@ -281,22 +263,5 @@ class MainActivity : AppCompatActivity() {
         this.visibility = View.GONE
     }
 
-    private fun View.setPivot(pX: Float, pY: Float) {
-        this.pivotX = pX
-        this.pivotY = pY
-    }
-
     private fun View.hasScaleNearToMin() = this.scaleX < MIN_SCALE + (MAX_SCALE - MIN_SCALE) / 2
-
-    private fun showBefore() {
-        view01.text = "before:" +
-                "pX = ${pointPivot.x}\n" +
-                "pY=${pointPivot.y}\n"
-    }
-
-    private fun showAfter() {
-        view03.text = "before:" +
-                "pX = ${pointPivot.x}\n" +
-                "pY=${pointPivot.y}\n"
-    }
 }

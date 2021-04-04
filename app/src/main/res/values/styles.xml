@@ -8,6 +8,6 @@
         <item name = "android:background">#FFEB3B</item>
         <item name = "android:textColor">#E91E63</item>
         <item name = "android:textSize">10sp</item>
-        <item name = "android:gravity">center</item>
+        <item name = "android:gravity">start</item>
     </style>
 </resources>
